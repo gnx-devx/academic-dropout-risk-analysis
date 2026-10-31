@@ -2,8 +2,7 @@
 
 Machine learning analysis and predictive modeling to identify key factors and early risk of student dropout in higher education.
 
-> **Status:** work in progress. Exploratory analysis is complete; modeling is in progress.
-
+> **Status:** analysis complete.
 ---
 
 ## 🎯 Problem Statement & Objectives
@@ -19,6 +18,7 @@ Machine learning analysis and predictive modeling to identify key factors and ea
 ## 📊 Dataset
 
 - **Source:** [Student Academic Performance & Dropout Risk 2026](https://www.kaggle.com/datasets/mohankrishnathalla/student-academic-performance-and-dropout-risk) (Kaggle).
+- **License:** CC0 1.0 (public domain), so the dataset can be redistributed.
 - **Size:** 100,000 students, 32 features, a student identifier and the target `dropout` (1 = dropped out, 32% of students).
 - **Feature groups:** demographics, socioeconomic, institutional, academic performance, engagement and behaviour, and wellbeing and support.
 - **Important:** according to the dataset description, all records are **fully synthetic** and `dropout` was generated with a logistic model calibrated to published research. The results therefore illustrate the methodology and should not be read as findings about real students.
@@ -35,17 +35,19 @@ Notebook: [`notebooks/01_eda.ipynb`](notebooks/01_eda.ipynb)
 - **Financial background:** dropout is 42.9% for low-income, 30.0% for middle-income and 20.0% for high-income students, and the gap persists within GPA groups. Students without up-to-date tuition (44.2% vs. 28.7%) and with a part-time job (39.8% vs. 24.7%) also show higher dropout.
 - **Little or no difference** by gender, nationality, course type or international status.
 
+![Dropout rate by attendance](reports/figures/dropout_by_attendance.png)
+
 All findings are descriptive associations, not causal effects.
 
 ---
 
-## 🤖 Modeling (in progress)
+## 🤖 Modeling
 
 Notebook: [`notebooks/02_modeling.ipynb`](notebooks/02_modeling.ipynb)
 
 **Scenario A (early warning).** The model uses 26 of the 32 features as a design decision: `gpa_semester_2` and the variables describing the current semester (`semester`, `units_enrolled`, `units_passed`, `units_failed`, `missed_deadlines`) are excluded. The dataset does not document when the remaining variables are recorded, so their availability after the first semester is an assumption.
 
-**Method:** stratified 80/20 train/test split; models compared with 5-fold stratified cross-validation on the training set; the test set is used once at the end.
+**Method:** stratified 80/20 train/test split; models and the decision threshold were selected with 5-fold stratified cross-validation on the training set; the test set was used only for the final evaluation and the group comparison, not for any modeling decision.
 
 | Model | Features | ROC-AUC | PR-AUC |
 |---|---|---|---|
@@ -58,6 +60,10 @@ The logistic regression with the 26 Scenario A features was selected: gradient b
 **Test set (logistic regression, 26 features):** ROC-AUC 0.896 and PR-AUC 0.818. A decision threshold of 0.30 was chosen on the training set with the criterion of detecting at least 80% of dropouts. On the test set it detects 83.0% of dropouts (recall) with a precision of 65.7%, flagging 40.4% of students as at risk.
 
 **Model interpretation:** the coefficients of the logistic regression are consistent with the EDA: semester-1 GPA is the dominant factor (one standard deviation more is associated with odds of dropout about 0.19 times as high), followed by attendance, tuition status, weekly work hours, LMS activity, assignment submission and stress. Family income shows a clear gradient (low-income students have about 2.3 times the odds of high-income students, all else equal), while most demographic and institutional variables add little. These are conditional associations in synthetic data, not causal effects.
+
+![Logistic regression coefficients](reports/figures/logreg_coefficients.png)
+
+**Fairness check (test set, threshold 0.30):** performance is similar by gender, but not by income level or first-generation status. Low-income students are flagged more often than high-income ones (55.3% vs. 24.2%), with higher recall (0.878 vs. 0.726) but also a higher false alarm rate (0.309 vs. 0.122); first-generation students show the same pattern to a smaller degree. Whether this comes from the model or from differences in dropout rates between groups was not tested.
 
 ---
 
@@ -78,14 +84,13 @@ The logistic regression with the 26 Scenario A features was selected: gradient b
 ---
 
 ## ⚙️ How to Reproduce
-
 ```bash
 conda create -n dropout-risk python=3.11
 conda activate dropout-risk
 pip install -r requirements.txt
 ```
 
-Download the dataset from Kaggle and place the CSV in `data/raw/` as `student_dropout_risk_2026.csv`, then run the notebooks in order.
+The dataset is included in `data/raw/student_dropout_risk_2026.csv` (it can also be downloaded from the Kaggle link above). Run the notebooks in order.
 
 ---
 
@@ -94,3 +99,7 @@ Download the dataset from Kaggle and place the CSV in `data/raw/` as `student_dr
 - The dataset is synthetic, so the results illustrate the methodology and not real-world performance.
 - `dropout` has no date and most variables do not specify the period they refer to, so the "early warning" setting is a design choice that cannot be verified with this data.
 - Associations are descriptive; they do not establish causation.
+
+## 📄 License
+
+Code released under the MIT License. The dataset is licensed under CC0 1.0 by its original author.
