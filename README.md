@@ -57,8 +57,7 @@ The logistic regression with the 26 Scenario A features was selected: gradient b
 
 **Test set (logistic regression, 26 features):** ROC-AUC 0.896 and PR-AUC 0.818. A decision threshold of 0.30 was chosen on the training set with the criterion of detecting at least 80% of dropouts. On the test set it detects 83.0% of dropouts (recall) with a precision of 65.7%, flagging 40.4% of students as at risk.
 
-**Next:** model interpretation (which features weigh most in the model).
-
+**Model interpretation:** the coefficients of the logistic regression are consistent with the EDA: semester-1 GPA is the dominant factor (one standard deviation more is associated with odds of dropout about 0.19 times as high), followed by attendance, tuition status, weekly work hours, LMS activity, assignment submission and stress. Family income shows a clear gradient (low-income students have about 2.3 times the odds of high-income students, all else equal), while most demographic and institutional variables add little. These are conditional associations in synthetic data, not causal effects.
 ---
 
 ## 📁 Repository Structure
